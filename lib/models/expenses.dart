@@ -20,7 +20,7 @@ class Expenses {
   String? id;
   String title;
   String amount;
-  String? date;
+  String date;
   String category;
 
   String formattedDate(date) {

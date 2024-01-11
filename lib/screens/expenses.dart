@@ -46,6 +46,17 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             ));
   }
 
+  final filteredMonthList = [];
+
+  monthCalcFun(getMonth) {
+    myExpensesList.where((pickedItem) {
+      final parsedMonth = DateTime.parse(pickedItem.date);
+      final formattedMonth = DateFormat('MMM-yyyy').format(parsedMonth);
+      if (getMonth == formattedMonth) {}
+      return (pickedItem == true);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -75,9 +86,11 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
               child: Row(
                 children: [
-                  CupertinoWidget(selectedMonths: (input){
-                      print( '123  $input');
-                  },),
+                  CupertinoWidget(
+                    selectedMonths: (getMonth) {
+                      monthCalcFun(getMonth);
+                    },
+                  ),
                   const SizedBox(
                     width: 10,
                   ),

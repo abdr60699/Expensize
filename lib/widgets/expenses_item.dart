@@ -44,10 +44,6 @@ class _ExpenseItemState extends State<ExpenseItem> {
             ));
   }
 
-
-    
-
-
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
