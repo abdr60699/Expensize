@@ -18,7 +18,7 @@ class EditScreen extends StatefulWidget {
   String resTitle;
   String resCategory;
   String resAmount;
-  String resDate;
+  DateTime resDate;
   Function? editData;
 
   @override
@@ -38,9 +38,9 @@ class _EditScreenState extends State<EditScreen> {
     // TODO: implement initState
     super.initState();
     _title.text = widget.resTitle;
-    _amount.text = widget.resAmount;
+    _amount.text = widget.resAmount.toString();
     selectedCategory = widget.resCategory;
-    formattedDate = widget.resDate;
+    formattedDate = DateFormat('dd-MMM-yyyy').format(widget.resDate);
   }
 
   @override
@@ -49,6 +49,16 @@ class _EditScreenState extends State<EditScreen> {
     super.dispose();
     _title.dispose();
     _amount.dispose();
+  }
+
+  updateOnPress() {
+    widget.editData!(
+        title: _title.text,
+        amount: _amount.text,
+        category: selectedCategory,
+        date: _selectedDates);
+
+    Navigator.pop(context);
   }
 
   @override
@@ -70,9 +80,7 @@ class _EditScreenState extends State<EditScreen> {
             ReusableTextInput(
               controller: _title,
               hintText: 'Title',
-              textInput: (inputValue) {
-                // _title = inputValue;
-              },
+              textInput: (inputValue) {},
             ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -119,7 +127,7 @@ class _EditScreenState extends State<EditScreen> {
                               if (pickedDate != null) {
                                 setState(() {
                                   _selectedDates = pickedDate;
-                                  formattedDate = DateFormat('dd/MM/yyyy')
+                                  formattedDate = DateFormat('dd-MM-yyyy')
                                       .format(_selectedDates);
                                 });
                               }
@@ -134,15 +142,7 @@ class _EditScreenState extends State<EditScreen> {
                       style: ElevatedButton.styleFrom(
                           backgroundColor:
                               Theme.of(context).colorScheme.primaryContainer),
-                      onPressed: () {
-                        widget.editData!(
-                            title: _title.text,
-                            amount: _amount.text,
-                            category: selectedCategory,
-                            date: formattedDate);
-
-                        Navigator.pop(context);
-                      },
+                      onPressed: updateOnPress,
                       child: Text('Update'),
                     ),
                   ),

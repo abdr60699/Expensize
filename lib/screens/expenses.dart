@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:expensize/models/expenses.dart';
 import 'package:expensize/screens/add.dart';
@@ -15,46 +18,85 @@ class ExpensesScreen extends StatefulWidget {
 }
 
 class _ExpensesScreenState extends State<ExpensesScreen> {
+  final dbBox = Hive.box('expensizeDB');
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  List filteredMonthList = [];
+
   List<Expenses> myExpensesList = [
-    Expenses(
-        title: 'Dress', amount: '100', date: '12-Jan-2024', category: 'work'),
-    Expenses(
-        title: 'Dress', amount: '100', date: '12-Feb-2024', category: 'work'),
-    Expenses(
-        title: 'Dress', amount: '100', date: '12-Feb-2024', category: 'work'),
-    Expenses(
-        title: 'Dress', amount: '400', date: '19-Jan-2024', category: 'work'),
-    Expenses(
-        title: 'Dress', amount: '400', date: '13-Jan-2024', category: 'work'),
-    Expenses(
-        title: 'Dress', amount: '100', date: '12-Jan-2024', category: 'work'),
+    // Expenses(
+    //     title: 'Dress', amount: '100', date: DateTime.now(), category: 'work'),
+    // Expenses(
+    //     title: 'Dress', amount: '120', date: DateTime.now(), category: 'work'),
+    // Expenses(
+    //     title: 'Dress',
+    //     amount: '120',
+    //     date: DateTime(2024, 2, 2),
+    //     category: 'work'),
+    // Expenses(
+    //     title: 'Dress', amount: '100', date: DateTime.now(), category: 'work'),
+    // Expenses(
+    //     title: 'Dress', amount: '120', date: DateTime.now(), category: 'work'),
+    // Expenses(
+    //     title: 'Dress',
+    //     amount: '120',
+    //     date: DateTime(2024, 2, 2),
+    //     category: 'work'),
   ];
 
   void onPressed() {
+    // dbBox.clear();
     showModalBottomSheet(
         isScrollControlled: true,
         context: context,
         builder: (context) => AddScreen(
-              addData: ({title, amount, date, category}) {
-                setState(() {});
-                myExpensesList.add(Expenses(
-                    title: title,
-                    amount: amount,
-                    date: date,
-                    category: category));
+              addData: (Map dbData) {
+                dbBox.add(dbData);
+
+                var filteredDBMonthList = dbBox.keys.map((eachKey) {
+                  var eachItem = dbBox.get(eachKey);
+                  myExpensesList.add(
+                    Expenses(
+                        title: eachItem['title'],
+                        amount: eachItem['amount'],
+                        date: eachItem['date'],
+                        category: eachItem['category']),
+                  );
+                  print(' check =====> ${eachKey}}');
+                  setState(() {});
+                  return eachItem;
+                }).toList();
+                print('object  ${filteredDBMonthList.length}');
+                print('object22222222222222222222  ${myExpensesList.length}');
+
+                // myExpensesList = filteredMonthList;
               },
             ));
   }
 
-  final filteredMonthList = [];
+  monthChangeFun({getMonth}) {
+    Future.delayed(Duration(milliseconds: 50), () {
+      filteredMonthList = myExpensesList.where((pickedItem) {
+        final formattedMonth = DateFormat('MMM-yyyy').format(pickedItem.date);
+        setState(() {});
+        return getMonth == formattedMonth;
+      }).toList();
+      // monthExpenseCalculate(filteredMonthList);
+    });
 
-  monthCalcFun(getMonth) {
-    myExpensesList.where((pickedItem) {
-      final parsedMonth = DateTime.parse(pickedItem.date);
-      final formattedMonth = DateFormat('MMM-yyyy').format(parsedMonth);
-      if (getMonth == formattedMonth) {}
-      return (pickedItem == true);
-    }).toList();
+    return filteredMonthList;
+  }
+
+  int total = 0;
+  monthExpenseCalculate(List<Expenses> filteredList) {
+    total = filteredMonthList.fold(0,
+        (previousValue, current) => previousValue + int.parse(current.amount));
+
+    print('total $total');
   }
 
   @override
@@ -86,31 +128,36 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
               child: Row(
                 children: [
-                  CupertinoWidget(
-                    selectedMonths: (getMonth) {
-                      monthCalcFun(getMonth);
-                    },
+                  Expanded(
+                    child: ReusableHomeCards(
+                      headTitle: 'Total',
+                      subTitle: '₹ $total',
+                    ),
                   ),
                   const SizedBox(
                     width: 10,
                   ),
-                  ReusableHomeCards(
-                    headTitle: 'Total',
-                    subTitle: '\$ 1003',
+                  Expanded(
+                    child: CupertinoWidget(
+                      selectedMonths: (getMonth) {
+                        monthChangeFun(getMonth: getMonth);
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
             Expanded(
-              flex: 3,
+              flex: 4,
               child: ExpenseItem(
                 deletFun: (index) {
                   setState(() {
                     myExpensesList.removeAt(index);
                   });
                 },
-                redEdit: () {
-                  setState(() {});
+                redEdit: (date) {
+                  var _stringDateTime = DateFormat('MMM-yyyy').format(date);
+                  monthChangeFun(getMonth: _stringDateTime);
                 },
                 expensesList: myExpensesList,
               ),
@@ -122,29 +169,49 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   }
 }
 
- // List.generate(12, (index) {
-    //   DateFormat('MMM', 'en-us')
-    //       .format(DateTime(2001,1,1,1,))
-    //       .split('0')
-    //       .map((e) => months.add(e))
-    //       .toList();
-    // });
+// List.generate(12, (index) {
+//   DateFormat('MMM', 'en-us')
+//       .format(DateTime(2001,1,1,1,))
+//       .split('0')
+//       .map((e) => months.add(e))
+//       .toList();
+// });
 
-    // return months};
+// return months};
+
+// Expanded(
+//   child: Card(
+//     child: CupertinoPicker(
+//         backgroundColor: Colors.red,
+//         itemExtent: 32,
+//         onSelectedItemChanged: (index) {},
+//         children: const [
+//           Text('data'),
+//           Text('dataaaaa'),
+//           Text('dataaa'),
+//         ]),
+//   ),
+// ),
 
 
 
-    
-                  // Expanded(
-                  //   child: Card(
-                  //     child: CupertinoPicker(
-                  //         backgroundColor: Colors.red,
-                  //         itemExtent: 32,
-                  //         onSelectedItemChanged: (index) {},
-                  //         children: const [
-                  //           Text('data'),
-                  //           Text('dataaaaa'),
-                  //           Text('dataaa'),
-                  //         ]),
-                  //   ),
-                  // ),
+//  for (var i = 0; i <= filteredMonthList.length; i++) {
+//         total += int.parse(filteredMonthList[i].amount);
+//       }
+
+ // void initState() {
+  //   // TODO: implement initState
+  //   super.initState();
+  //   monthChangeFun(_today);
+  // }
+
+  // final _today = DateFormat('dd-MMM-yyy').format(DateTime.now());
+
+
+   // myExpensesList.add(
+                  // Expenses(
+                    // title: title,
+                    // amount: amount,
+                    // date: date!,
+                    // category: category));
+                // var stringDateTime = DateFormat('MMM-yyyy').format(date);

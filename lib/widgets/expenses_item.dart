@@ -33,14 +33,14 @@ class _ExpenseItemState extends State<ExpenseItem> {
                 widget.expensesList![index].title = title;
                 widget.expensesList![index].amount = amount;
                 widget.expensesList![index].category = category;
-                widget.expensesList![index].date = date.toString();
+                widget.expensesList![index].date = date;
 
-                widget.redEdit!();
+                widget.redEdit!(date);
               },
               resAmount: widget.expensesList![index].amount,
               resTitle: widget.expensesList![index].title,
               resCategory: widget.expensesList![index].category,
-              resDate: widget.expensesList![index].date.toString(),
+              resDate: widget.expensesList![index].date,
             ));
   }
 
@@ -77,7 +77,7 @@ class _ExpenseItemState extends State<ExpenseItem> {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         Text(
-                          widget.expensesList![index].date.toString(),
+                          widget.expensesList![index].formattedDate().toString(),
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ],

@@ -110,10 +110,10 @@ class _AddScreenState extends State<AddScreen> {
                               Theme.of(context).colorScheme.primaryContainer),
                       onPressed: () {
                         widget.addData!(
-                            title: title,
-                            amount: amount,
-                            date: formattedDate,
-                            category: selectedCategory);
+                            {'title': title,
+                            'amount': amount,
+                            'date': selectedDates,
+                            'category': selectedCategory});
                         Navigator.pop(context);
                       },
                       child: const Text('Add'),

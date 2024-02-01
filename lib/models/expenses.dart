@@ -7,7 +7,7 @@ const uuid = uuid_package.Uuid();
 
 List<String> Categorys = ['work', 'personal', 'others'];
 
-final formatter = DateFormat.yMd();
+final formatter = DateFormat('dd-MMM-yyyy');
 
 class Expenses {
   Expenses(
@@ -20,10 +20,12 @@ class Expenses {
   String? id;
   String title;
   String amount;
-  String date;
+  DateTime date;
   String category;
 
-  String formattedDate(date) {
-    return formatter.format(date!);
+  String formattedDate() {
+    return formatter.format(date);
   }
+
+
 }

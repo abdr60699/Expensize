@@ -5,7 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:expensize/widgets/reusable_home_cards.dart';
 
 class CupertinoWidget extends StatefulWidget {
-  CupertinoWidget({super.key, required this.selectedMonths});
+  CupertinoWidget({
+    super.key,
+    required this.selectedMonths,
+  });
 
   Function selectedMonths;
 
@@ -16,10 +19,9 @@ class CupertinoWidget extends StatefulWidget {
 class _CupertinoWidgetState extends State<CupertinoWidget> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     yearMonthFun();
-    widget.selectedMonths( formatThisMonth!);
+    widget.selectedMonths(formatThisMonth!);
   }
 
   final today = DateTime.now();
@@ -27,6 +29,7 @@ class _CupertinoWidgetState extends State<CupertinoWidget> {
 
   int indexOfThisMonth = 0;
   List<String> yearsMonths = [];
+  bool isUpdateDropDown = false;
 
   List<String>? yearMonthFun() {
     final currentYear = today.year;
@@ -47,21 +50,56 @@ class _CupertinoWidgetState extends State<CupertinoWidget> {
   Widget build(BuildContext context) {
     return ReusableHomeCards(
       headTitle: 'Months',
-      cupertinoPicker: CupertinoPicker(
-          scrollController:
-              FixedExtentScrollController(initialItem: indexOfThisMonth),
-          itemExtent: 40,
-          onSelectedItemChanged: (index) {
-            widget.selectedMonths( yearsMonths[index]);
-          },
-          children: [
-            ...yearMonthFun()!.map(
-              (dates) => Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(dates),
-              ),
+      cupertinoPicker: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.background,
+              borderRadius: BorderRadius.circular(10)),
+          child: Center(
+            child: DropdownButton(
+              value: formatThisMonth,
+              items: yearsMonths
+                  .map(
+                    (e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(e),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  formatThisMonth = value;
+                  widget.selectedMonths(formatThisMonth);
+                });
+              },
             ),
-          ]),
+          ),
+        ),
+      ),
     );
   }
 }
+
+
+   // CupertinoPicker(
+          //     selectionOverlay: AnimatedContainer(
+          //       duration: Duration(milliseconds: 500),
+          //       curve: Curves.easeInOut,
+          //     ),
+          //     diameterRatio: 1,
+          //     scrollController:
+          //         FixedExtentScrollController(initialItem: widget.cupertinoTrigger ?? indexOfThisMonth ),
+          //     itemExtent: 40,
+          //     onSelectedItemChanged: (index) {
+          //       widget.selectedMonths(yearsMonths[index]);
+          //     },
+          //     children: [
+          //       ...yearMonthFun()!.map(
+          //         (dates) => Padding(
+          //           padding: const EdgeInsets.all(8.0),
+          //           child: Text(dates),
+          //         ),
+          //       ),
+          //     ]),
