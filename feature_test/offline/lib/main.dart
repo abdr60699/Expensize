@@ -1,125 +1,328 @@
 import 'package:flutter/material.dart';
+import 'package:offline/connectivity_offline/offline_support.dart';
+import 'package:offline/connectivity_offline/config/offline_config.dart';
+import 'package:offline/connectivity_offline/models/cache_metadata.dart';
+import 'package:offline/connectivity_offline/models/offline_request.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the offline support module
+  await OfflineSupport.initialize(
+    config: OfflineConfig.development(),
+  );
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Offline Support Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const OfflineDemo(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class OfflineDemo extends StatefulWidget {
+  const OfflineDemo({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<OfflineDemo> createState() => _OfflineDemoState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _OfflineDemoState extends State<OfflineDemo> {
+  final TextEditingController _keyController = TextEditingController();
+  final TextEditingController _valueController = TextEditingController();
+  String _status = 'Ready';
+  List<String> _cacheKeys = [];
+  List<String> _queuedRequests = [];
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    super.initState();
+    _refreshData();
+  }
+
+  Future<void> _refreshData() async {
+    final cacheBox = Hive.box('offline_cache');
+    final queueBox = Hive.box('offline_queue');
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _cacheKeys = cacheBox.keys.cast<String>().toList();
+      _queuedRequests = queueBox.keys.cast<String>().toList();
     });
+  }
+
+  Future<void> _addToCache() async {
+    if (_keyController.text.isEmpty || _valueController.text.isEmpty) {
+      _showMessage('Please enter both key and value');
+      return;
+    }
+
+    try {
+      final cacheBox = Hive.box('offline_cache');
+      final metadataBox = Hive.box('offline_metadata');
+
+      final metadata = CacheMetadata(
+        key: _keyController.text,
+        createdAt: DateTime.now(),
+        expiresAt: DateTime.now().add(const Duration(hours: 1)),
+        sizeInBytes: _valueController.text.length,
+        lastAccessedAt: DateTime.now(),
+      );
+
+      final entry = CacheEntry(
+        key: _keyController.text,
+        data: _valueController.text,
+        metadata: metadata,
+      );
+
+      await cacheBox.put(_keyController.text, entry);
+      await metadataBox.put(_keyController.text, metadata);
+
+      _showMessage('Added to cache: ${_keyController.text}');
+      _keyController.clear();
+      _valueController.clear();
+      await _refreshData();
+    } catch (e) {
+      _showMessage('Error: $e');
+    }
+  }
+
+  Future<void> _addToQueue() async {
+    if (_keyController.text.isEmpty) {
+      _showMessage('Please enter a URL in the key field');
+      return;
+    }
+
+    try {
+      final queueBox = Hive.box('offline_queue');
+
+      final request = OfflineRequest(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        method: 'POST',
+        url: _keyController.text,
+        body: _valueController.text,
+        createdAt: DateTime.now(),
+        priority: RequestPriority.normal,
+      );
+
+      await queueBox.add(request);
+
+      _showMessage('Added to queue: ${request.method} ${request.url}');
+      _keyController.clear();
+      _valueController.clear();
+      await _refreshData();
+    } catch (e) {
+      _showMessage('Error: $e');
+    }
+  }
+
+  Future<void> _viewCacheItem(String key) async {
+    try {
+      final cacheBox = Hive.box('offline_cache');
+      final entry = cacheBox.get(key) as CacheEntry?;
+
+      if (entry != null) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Cache Entry: $key'),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Key: ${entry.key}'),
+                  const SizedBox(height: 8),
+                  Text('Data: ${entry.data}'),
+                  const SizedBox(height: 8),
+                  Text('Created: ${entry.metadata.createdAt}'),
+                  Text('Expires: ${entry.metadata.expiresAt}'),
+                  Text('Size: ${entry.metadata.sizeInBytes} bytes'),
+                  Text('Accessed: ${entry.metadata.accessCount} times'),
+                  Text('Is Expired: ${entry.isExpired}'),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      _showMessage('Error viewing item: $e');
+    }
+  }
+
+  Future<void> _clearCache() async {
+    try {
+      await OfflineSupport.clearAllData();
+      _showMessage('All offline data cleared');
+      await _refreshData();
+    } catch (e) {
+      _showMessage('Error: $e');
+    }
+  }
+
+  void _showMessage(String message) {
+    setState(() {
+      _status = message;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Offline Support Demo'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep),
+            onPressed: _clearCache,
+            tooltip: 'Clear All Data',
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshData,
+            tooltip: 'Refresh',
+          ),
+        ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              'Status: $_status',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _keyController,
+              decoration: const InputDecoration(
+                labelText: 'Key / URL',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _valueController,
+              decoration: const InputDecoration(
+                labelText: 'Value / Body',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _addToCache,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add to Cache'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _addToQueue,
+                    icon: const Icon(Icons.queue),
+                    label: const Text('Add to Queue'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Cached Items (${_cacheKeys.length})',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: _cacheKeys.isEmpty
+                  ? const Center(child: Text('No cached items'))
+                  : ListView.builder(
+                      itemCount: _cacheKeys.length,
+                      itemBuilder: (context, index) {
+                        final key = _cacheKeys[index];
+                        return Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.storage),
+                            title: Text(key),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _viewCacheItem(key),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Queued Requests (${_queuedRequests.length})',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: _queuedRequests.isEmpty
+                  ? const Center(child: Text('No queued requests'))
+                  : ValueListenableBuilder(
+                      valueListenable: Hive.box('offline_queue').listenable(),
+                      builder: (context, Box box, _) {
+                        return ListView.builder(
+                          itemCount: box.length,
+                          itemBuilder: (context, index) {
+                            final request = box.getAt(index) as OfflineRequest;
+                            return Card(
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.cloud_upload,
+                                  color: request.priorityLevel == RequestPriority.high
+                                      ? Colors.red
+                                      : request.priorityLevel == RequestPriority.normal
+                                          ? Colors.blue
+                                          : Colors.grey,
+                                ),
+                                title: Text('${request.method} ${request.url}'),
+                                subtitle: Text(
+                                  'Created: ${request.createdAt}\nRetries: ${request.retryCount}',
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  @override
+  void dispose() {
+    _keyController.dispose();
+    _valueController.dispose();
+    super.dispose();
   }
 }
