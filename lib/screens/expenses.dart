@@ -71,7 +71,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   return eachItem;
                 }).toList();
                 print('object  ${filteredDBMonthList.length}');
-                print('object22222222222222222222  ${myExpensesList.length}');
+                print('object22222222222222222222mmm  ${myExpensesList.length}');
 
                 // myExpensesList = filteredMonthList;
               },
