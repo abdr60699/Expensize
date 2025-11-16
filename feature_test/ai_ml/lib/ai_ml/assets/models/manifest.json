@@ -1,0 +1,153 @@
+{
+  "version": "1.0.0",
+  "models": [
+    {
+      "id": "mobilenet_v2_1.0_224",
+      "name": "MobileNet V2 (224x224)",
+      "sizeBytes": 14200000,
+      "framework": "tflite",
+      "quantized": false,
+      "quantizationType": null,
+      "version": "1.0",
+      "downloadUrl": "https://storage.googleapis.com/download.tensorflow.org/models/tflite/mobilenet_v2_1.0_224_quant.tflite",
+      "checksum": null,
+      "license": "Apache 2.0",
+      "inputShape": [1, 224, 224, 3],
+      "outputShape": [1, 1001],
+      "performance": {
+        "lowEndDeviceMs": 150,
+        "midRangeDeviceMs": 80,
+        "highEndDeviceMs": 40,
+        "minRamMb": 512,
+        "recommendedRamMb": 1024,
+        "recommendedProfile": "medium"
+      },
+      "metadata": {
+        "task": "image_classification",
+        "description": "MobileNet V2 trained on ImageNet. Good balance of speed and accuracy for mobile devices.",
+        "categories": "ImageNet 1000 classes"
+      }
+    },
+    {
+      "id": "mobilenet_v2_1.0_224_quantized",
+      "name": "MobileNet V2 Quantized (224x224)",
+      "sizeBytes": 3500000,
+      "framework": "tflite",
+      "quantized": true,
+      "quantizationType": "int8",
+      "version": "1.0",
+      "downloadUrl": "https://storage.googleapis.com/download.tensorflow.org/models/tflite/mobilenet_v2_1.0_224_quant.tflite",
+      "checksum": null,
+      "license": "Apache 2.0",
+      "inputShape": [1, 224, 224, 3],
+      "outputShape": [1, 1001],
+      "performance": {
+        "lowEndDeviceMs": 100,
+        "midRangeDeviceMs": 50,
+        "highEndDeviceMs": 25,
+        "minRamMb": 256,
+        "recommendedRamMb": 512,
+        "recommendedProfile": "low"
+      },
+      "metadata": {
+        "task": "image_classification",
+        "description": "Quantized MobileNet V2. Smaller size, faster inference, suitable for low-end devices.",
+        "categories": "ImageNet 1000 classes"
+      }
+    },
+    {
+      "id": "universal_sentence_encoder_lite",
+      "name": "Universal Sentence Encoder Lite",
+      "sizeBytes": 50000000,
+      "framework": "tflite",
+      "quantized": false,
+      "quantizationType": null,
+      "version": "2.0",
+      "downloadUrl": null,
+      "checksum": null,
+      "license": "Apache 2.0",
+      "inputShape": [1, 128],
+      "outputShape": [1, 512],
+      "performance": {
+        "lowEndDeviceMs": 200,
+        "midRangeDeviceMs": 100,
+        "highEndDeviceMs": 50,
+        "minRamMb": 512,
+        "recommendedRamMb": 1024,
+        "recommendedProfile": "medium"
+      },
+      "metadata": {
+        "task": "text_embedding",
+        "description": "Universal Sentence Encoder for generating text embeddings. 512-dimensional output.",
+        "embedding_dimension": 512
+      }
+    },
+    {
+      "id": "mlkit_text_recognition",
+      "name": "ML Kit Text Recognition",
+      "sizeBytes": 0,
+      "framework": "mlkit",
+      "quantized": false,
+      "quantizationType": null,
+      "version": "latest",
+      "downloadUrl": null,
+      "checksum": null,
+      "license": "Google ML Kit Terms",
+      "inputShape": null,
+      "outputShape": null,
+      "performance": {
+        "lowEndDeviceMs": 500,
+        "midRangeDeviceMs": 250,
+        "highEndDeviceMs": 150,
+        "minRamMb": 512,
+        "recommendedRamMb": 1024,
+        "recommendedProfile": "medium"
+      },
+      "metadata": {
+        "task": "ocr",
+        "description": "Google ML Kit on-device text recognition. Supports multiple languages.",
+        "supported_languages": ["en", "es", "fr", "de", "it", "ja", "ko", "zh"]
+      }
+    },
+    {
+      "id": "mlkit_object_detection",
+      "name": "ML Kit Object Detection",
+      "sizeBytes": 0,
+      "framework": "mlkit",
+      "quantized": false,
+      "quantizationType": null,
+      "version": "latest",
+      "downloadUrl": null,
+      "checksum": null,
+      "license": "Google ML Kit Terms",
+      "inputShape": null,
+      "outputShape": null,
+      "performance": {
+        "lowEndDeviceMs": 600,
+        "midRangeDeviceMs": 300,
+        "highEndDeviceMs": 150,
+        "minRamMb": 512,
+        "recommendedRamMb": 1024,
+        "recommendedProfile": "medium"
+      },
+      "metadata": {
+        "task": "object_detection",
+        "description": "Google ML Kit on-device object detection and tracking.",
+        "categories": "Common objects (furniture, vehicles, animals, food, etc.)"
+      }
+    }
+  ],
+  "recommended_models": {
+    "image_classification_low_end": "mobilenet_v2_1.0_224_quantized",
+    "image_classification_high_quality": "mobilenet_v2_1.0_224",
+    "text_embedding": "universal_sentence_encoder_lite",
+    "ocr": "mlkit_text_recognition",
+    "object_detection": "mlkit_object_detection"
+  },
+  "notes": {
+    "quantization": "Quantized models (int8) offer 3-4x size reduction and faster inference with minimal accuracy loss (~1-2%). Recommended for mobile deployment.",
+    "gpu_delegation": "TFLite models support GPU delegates on Android (OpenGL, OpenCL) and iOS (Metal). Enable for 2-5x speedup on supported devices.",
+    "model_download": "Download models on WiFi and cache locally. Provide UI feedback for download progress. Allow users to delete models to free space.",
+    "licensing": "Ensure compliance with model licenses. ImageNet models typically require Apache 2.0 attribution. Custom models may have different terms."
+  }
+}
