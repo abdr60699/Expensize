@@ -1,125 +1,522 @@
-import 'package:flutter/material.dart';
+// ignore_for_file: use_build_context_synchronously
 
-void main() {
-  runApp(const MyApp());
+/// Firebase Auth Module - Example Application
+///
+/// This demonstrates the full Firebase Authentication module with:
+/// - Email/Password authentication
+/// - Social sign-in (Google, Facebook, Apple)
+/// - Phone OTP verification
+/// - Firebase Cloud Messaging (FCM)
+/// - Account linking
+/// - Email verification
+///
+/// IMPORTANT: Before running this app, you must:
+/// 1. Set up a Firebase project
+/// 2. Download google-services.json (Android) and GoogleService-Info.plist (iOS)
+/// 3. Follow the setup instructions in TESTING_GUIDE.md
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_auth/firebase_auth.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  // Note: This requires firebase_options.dart or platform-specific config files
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    // If Firebase is not configured, show error screen
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    size: 64,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Firebase Not Configured',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: $e',
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Please set up Firebase by following the instructions in TESTING_GUIDE.md',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    return;
+  }
+
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch auth state
+    final authState = ref.watch(authStateProvider);
+
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Firebase Auth Example',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: authState.when(
+        data: (user) {
+          if (user != null) {
+            return const HomeScreen();
+          } else {
+            return const SignInScreen();
+          }
+        },
+        loading: () => const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        error: (error, stack) => Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error, size: 48, color: Colors.red),
+                const SizedBox(height: 16),
+                Text('Error: $error'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Retry
+                    ref.invalidate(authStateProvider);
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final authService = ref.read(authServiceProvider);
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
+        title: const Text('Firebase Auth Demo'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Sign Out',
+            onPressed: () async {
+              await authService.signOut();
+            },
+          ),
+        ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          // Welcome header
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome!',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'You are successfully authenticated with Firebase.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 24),
+
+          // User information
+          const Text(
+            'User Information',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildInfoCard('UID', user?.uid ?? 'N/A'),
+          _buildInfoCard('Email', user?.email ?? 'Not set'),
+          _buildInfoCard('Phone', user?.phoneNumber ?? 'Not set'),
+          _buildInfoCard('Display Name', user?.displayName ?? 'Not set'),
+          _buildInfoCard(
+              'Email Verified', user?.emailVerified == true ? 'Yes' : 'No'),
+          _buildInfoCard(
+              'Anonymous', user?.isAnonymous == true ? 'Yes' : 'No'),
+          _buildInfoCard('Auth Providers', user?.providerIds.join(', ') ?? 'N/A'),
+          const SizedBox(height: 24),
+
+          // Actions
+          const Text(
+            'Actions',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          if (user?.email != null && !(user!.emailVerified))
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.mark_email_unread),
+                title: const Text('Email Not Verified'),
+                subtitle: const Text('Send verification email'),
+                trailing: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      await authService.sendEmailVerification();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Verification email sent!'),
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Send'),
+                ),
+              ),
+            ),
+
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.link),
+              title: const Text('Manage Linked Accounts'),
+              subtitle: const Text('Link or unlink auth providers'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AccountLinksScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('FCM Token'),
+              subtitle: const Text('View Firebase Cloud Messaging token'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FcmTokenScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Info
+          const Card(
+            color: Colors.blue,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text(
+                        'Features Included',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    '• Email/Password authentication\n'
+                    '• Social sign-in (Google, Facebook, Apple)\n'
+                    '• Phone OTP verification\n'
+                    '• Account linking/unlinking\n'
+                    '• Email verification\n'
+                    '• Firebase Cloud Messaging (FCM)\n'
+                    '• Secure token storage',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String label, String value) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 140,
+              child: Text(
+                '$label:',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(color: Colors.grey),
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class AccountLinksScreen extends ConsumerWidget {
+  const AccountLinksScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final authService = ref.read(authServiceProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Linked Accounts'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'You can link multiple authentication providers to your account. '
+                'This allows you to sign in using different methods.',
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildProviderTile(
+            context,
+            ref,
+            name: 'Google',
+            providerId: 'google.com',
+            icon: Icons.g_mobiledata,
+            color: Colors.red,
+            isLinked: user?.hasProvider('google.com') ?? false,
+            onLink: () async {
+              final result = await authService.linkWithGoogle();
+              _handleResult(context, result, 'Google linked!');
+            },
+            onUnlink: () async {
+              final result = await authService.unlinkProvider('google.com');
+              _handleResult(context, result, 'Google unlinked!');
+            },
+          ),
+          const Divider(),
+          _buildProviderTile(
+            context,
+            ref,
+            name: 'Facebook',
+            providerId: 'facebook.com',
+            icon: Icons.facebook,
+            color: Colors.blue,
+            isLinked: user?.hasProvider('facebook.com') ?? false,
+            onLink: () async {
+              final result = await authService.linkWithFacebook();
+              _handleResult(context, result, 'Facebook linked!');
+            },
+            onUnlink: () async {
+              final result = await authService.unlinkProvider('facebook.com');
+              _handleResult(context, result, 'Facebook unlinked!');
+            },
+          ),
+          const Divider(),
+          _buildProviderTile(
+            context,
+            ref,
+            name: 'Apple',
+            providerId: 'apple.com',
+            icon: Icons.apple,
+            color: Colors.black,
+            isLinked: user?.hasProvider('apple.com') ?? false,
+            onLink: () async {
+              final result = await authService.linkWithApple();
+              _handleResult(context, result, 'Apple linked!');
+            },
+            onUnlink: () async {
+              final result = await authService.unlinkProvider('apple.com');
+              _handleResult(context, result, 'Apple unlinked!');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProviderTile(
+    BuildContext context,
+    WidgetRef ref, {
+    required String name,
+    required String providerId,
+    required IconData icon,
+    required Color color,
+    required bool isLinked,
+    required VoidCallback onLink,
+    required VoidCallback onUnlink,
+  }) {
+    final user = ref.watch(currentUserProvider);
+    final canUnlink = (user?.providerIds.length ?? 0) > 1;
+
+    return ListTile(
+      leading: Icon(icon, color: isLinked ? color : Colors.grey, size: 32),
+      title: Text(name),
+      subtitle: Text(isLinked ? 'Linked' : 'Not linked'),
+      trailing: isLinked
+          ? (canUnlink
+              ? TextButton(
+                  onPressed: onUnlink,
+                  child: const Text('Unlink'),
+                )
+              : const Chip(label: Text('Primary')))
+          : ElevatedButton(
+              onPressed: onLink,
+              child: const Text('Link'),
+            ),
+    );
+  }
+
+  void _handleResult(BuildContext context, AuthResult result, String successMsg) {
+    if (result.isSuccess) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(successMsg)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.error!.friendlyMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+
+class FcmTokenScreen extends StatelessWidget {
+  const FcmTokenScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('FCM Token'),
+      ),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.cloud_outlined, size: 64, color: Colors.blue),
+              SizedBox(height: 24),
+              Text(
+                'Firebase Cloud Messaging',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'FCM integration is ready. Configure FCM service to receive push notifications.',
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24),
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'See fcm/README.md for detailed FCM setup instructions.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
