@@ -142,8 +142,8 @@ class TfliteImageClassificationAdapter extends ImageClassificationAdapter {
 
   /// Preprocesses image to model input format
   Uint8List _preprocessImage(List<int> imageBytes) {
-    // Decode image
-    final image = img.decodeImage(imageBytes);
+    // Decode image - convert to Uint8List first
+    final image = img.decodeImage(Uint8List.fromList(imageBytes));
     if (image == null) {
       throw InferenceException('Failed to decode image');
     }
@@ -161,7 +161,7 @@ class TfliteImageClassificationAdapter extends ImageClassificationAdapter {
     final inputType = _interpreter!.getInputTensor(0).type;
 
     // Check if it's a float model (most common for image classification)
-    if (inputType.toString().contains('float') || inputType == TfLiteType.float32) {
+    if (inputType.toString().contains('float')) {
       final buffer = Float32List(inputShape[1] * inputShape[2] * inputShape[3]);
       int pixelIndex = 0;
 
@@ -178,7 +178,7 @@ class TfliteImageClassificationAdapter extends ImageClassificationAdapter {
 
       return buffer.buffer.asUint8List();
     } else {
-      // Quantized model
+      // Quantized model (uint8)
       final buffer = Uint8List(inputShape[1] * inputShape[2] * inputShape[3]);
       int pixelIndex = 0;
 
@@ -192,8 +192,6 @@ class TfliteImageClassificationAdapter extends ImageClassificationAdapter {
       }
 
       return buffer;
-    } else {
-      throw InferenceException('Unsupported input type: $inputType');
     }
   }
 }

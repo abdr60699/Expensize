@@ -40,6 +40,19 @@ class ConsoleLogger implements AiLogger {
       print('  StackTrace:\n$stackTrace');
     }
   }
+
+  @override
+  void debug(String message) => log(LogLevel.debug, message);
+
+  @override
+  void info(String message) => log(LogLevel.info, message);
+
+  @override
+  void warning(String message, [Object? error]) => log(LogLevel.warning, message, error);
+
+  @override
+  void error(String message, [Object? error, StackTrace? stackTrace]) =>
+      log(LogLevel.error, message, error, stackTrace);
 }
 
 /// No-op logger (does nothing)
@@ -48,6 +61,26 @@ class NoOpLogger implements AiLogger {
 
   @override
   void log(LogLevel level, String message, [Object? error, StackTrace? stackTrace]) {
+    // Do nothing
+  }
+
+  @override
+  void debug(String message) {
+    // Do nothing
+  }
+
+  @override
+  void info(String message) {
+    // Do nothing
+  }
+
+  @override
+  void warning(String message, [Object? error]) {
+    // Do nothing
+  }
+
+  @override
+  void error(String message, [Object? error, StackTrace? stackTrace]) {
     // Do nothing
   }
 }
