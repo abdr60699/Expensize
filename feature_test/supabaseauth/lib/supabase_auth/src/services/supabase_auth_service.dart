@@ -56,7 +56,7 @@ class SupabaseAuthService implements AuthService {
       );
 
       if (response.user == null) {
-        throw AuthError.unknownError;
+        throw AuthError.unknownError();
       }
 
       return _mapAuthResponse(response);
@@ -150,7 +150,7 @@ class SupabaseAuthService implements AuthService {
         return _mapSessionToResult(session!, provider.id);
       }
 
-      throw AuthError.providerError;
+      throw AuthError.providerError('OAuth flow completed but no session found', provider);
     } on supabase.AuthException catch (e) {
       throw _mapSupabaseError(e, provider);
     } catch (e, stackTrace) {
@@ -244,7 +244,7 @@ class SupabaseAuthService implements AuthService {
       );
 
       if (response.user == null) {
-        throw AuthError.unknownError;
+        throw AuthError.unknownError();
       }
 
       return _mapUserResponse(response);

@@ -171,6 +171,23 @@ class AuthError implements Exception {
     );
   }
 
+  /// Create error for provider-specific errors
+  factory AuthError.providerError([String? details, SocialProvider? provider]) {
+    return AuthError(
+      code: AuthErrorCode.providerError,
+      message: details ?? 'Provider authentication error',
+      provider: provider,
+    );
+  }
+
+  /// Create unknown error
+  factory AuthError.unknownError([String? details]) {
+    return AuthError(
+      code: AuthErrorCode.unknownError,
+      message: details ?? 'An unknown error occurred',
+    );
+  }
+
   /// Create error from exception
   factory AuthError.fromException(
     Object error, [
