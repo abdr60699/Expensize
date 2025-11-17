@@ -1,4 +1,4 @@
-
+import '../models/social_provider.dart';
 
 /// Password validation requirements
 class PasswordRequirements {

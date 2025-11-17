@@ -23,7 +23,7 @@ class AuthResult {
   /// Timestamp of when this result was created
   final DateTime timestamp;
 
-  const AuthResult({
+  AuthResult({
     required this.provider,
     required this.user,
     this.accessToken,
@@ -31,7 +31,7 @@ class AuthResult {
     this.expiresAt,
     this.providerData,
     DateTime? timestamp,
-  }) : timestamp = timestamp ?? const Duration().inMilliseconds as DateTime;
+  }) : timestamp = timestamp ?? DateTime.now();
 
   /// Copy with new values
   AuthResult copyWith({

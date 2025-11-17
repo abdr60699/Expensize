@@ -78,19 +78,8 @@ class _SupabaseAuthDemoScreenState extends State<SupabaseAuthDemoScreen> {
         tokenStorage: SecureTokenStorage(),
       );
 
-      try {
-        await authService.initialize();
-      } catch (e) {
-        // Supabase not configured - show demo mode
-        setState(() {
-          _errorMessage = 'Supabase not configured';
-          _isInitialized = true;
-        });
-        return;
-      }
-
-      // Create repository
-      _authRepository = AuthRepository(authService: authService);
+      // Create repository using initialize factory method
+      _authRepository = await AuthRepository.initialize(config);
 
       // Check for existing session
       final session = await _authRepository!.getCurrentSession();
@@ -976,7 +965,7 @@ class SecureTokenStorage implements TokenStorage {
   }
 
   @override
-  Future<String?> readToken(String key) async {
+  Future<String?> getToken(String key) async {
     return _storage[key];
   }
 
