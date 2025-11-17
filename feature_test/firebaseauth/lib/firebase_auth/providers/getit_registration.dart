@@ -8,6 +8,11 @@ import '../services/social_auth/google_signin_adapter.dart';
 import '../services/social_auth/apple_signin_adapter.dart';
 import '../services/social_auth/facebook_signin_adapter.dart';
 import '../services/phone_auth_service.dart';
+import '../models/user_model.dart';
+
+// Re-export GetIt for convenience
+export 'package:get_it/get_it.dart';
+export '../models/user_model.dart';
 
 /// GetIt service locator registration for Firebase Auth Module
 ///
@@ -120,7 +125,3 @@ extension GetItAuthExtensions on GetIt {
   /// Get current user
   UserModel? get currentUser => this<AuthRepository>().currentUser;
 }
-
-// Re-export GetIt for convenience
-export 'package:get_it/get_it.dart';
-export '../models/user_model.dart';
