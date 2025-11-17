@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'package:google_ml_kit/google_ml_kit.dart';
+import 'dart:ui';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import '../../models/model_info.dart';
 import '../../models/ocr_result.dart';
 import '../../errors/ai_ml_exceptions.dart';

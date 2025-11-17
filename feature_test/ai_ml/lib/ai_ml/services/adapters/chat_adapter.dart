@@ -68,6 +68,9 @@ abstract class ChatAdapter {
   /// Default model ID
   String get defaultModel;
 
+  /// Checks if the adapter is initialized
+  bool get isInitialized;
+
   /// Initializes the adapter
   Future<void> initialize();
 

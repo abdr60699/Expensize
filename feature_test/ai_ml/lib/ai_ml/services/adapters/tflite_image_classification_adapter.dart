@@ -160,7 +160,8 @@ class TfliteImageClassificationAdapter extends ImageClassificationAdapter {
     final inputShape = _interpreter!.getInputTensor(0).shape;
     final inputType = _interpreter!.getInputTensor(0).type;
 
-    if (inputType == TfLiteType.float32) {
+    // Check if it's a float model (most common for image classification)
+    if (inputType.toString().contains('float') || inputType == TfLiteType.float32) {
       final buffer = Float32List(inputShape[1] * inputShape[2] * inputShape[3]);
       int pixelIndex = 0;
 
@@ -176,7 +177,7 @@ class TfliteImageClassificationAdapter extends ImageClassificationAdapter {
       }
 
       return buffer.buffer.asUint8List();
-    } else if (inputType == TfLiteType.uint8) {
+    } else {
       // Quantized model
       final buffer = Uint8List(inputShape[1] * inputShape[2] * inputShape[3]);
       int pixelIndex = 0;
