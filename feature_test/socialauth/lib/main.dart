@@ -939,6 +939,11 @@ class SocialAuthInfoScreen extends StatelessWidget {
 /// Console Logger Implementation
 class ConsoleLogger implements SocialAuthLogger {
   @override
+  void debug(String message) {
+    debugPrint('🐛 [DEBUG] $message');
+  }
+
+  @override
   void info(String message) {
     debugPrint('ℹ️ [INFO] $message');
   }
