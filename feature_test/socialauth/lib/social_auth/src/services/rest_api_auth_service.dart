@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/auth_service.dart';
 import '../core/auth_result.dart';
+import '../core/social_provider.dart';
 
 /// REST API Authentication Service
 ///

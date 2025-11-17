@@ -61,16 +61,27 @@ class FacebookAuthAdapter extends BaseAuthAdapter {
             additionalInfo: userData,
           );
 
+          // Build provider data based on token type
+          final providerData = <String, dynamic>{};
+
+          // Try to cast to ClassicToken for additional info
+          try {
+            if (accessToken is ClassicToken) {
+              providerData['userId'] = accessToken.userId;
+              providerData['expires'] = accessToken.expires.toIso8601String();
+              providerData['grantedPermissions'] = accessToken.grantedPermissions;
+              providerData['declinedPermissions'] = accessToken.declinedPermissions;
+            }
+          } catch (e) {
+            // If cast fails, continue without additional data
+            logger.debug('Could not cast to ClassicToken: $e');
+          }
+
           final authResult = AuthResult(
             provider: SocialProvider.facebook,
-            accessToken: accessToken.token,
+            accessToken: accessToken.tokenString,
             user: user,
-            providerData: {
-              'userId': accessToken.userId,
-              'expires': accessToken.expires.toIso8601String(),
-              'grantedPermissions': accessToken.grantedPermissions,
-              'declinedPermissions': accessToken.declinedPermissions,
-            },
+            providerData: providerData.isEmpty ? null : providerData,
           );
 
           logger.info('Facebook sign-in successful: ${user.email}');
@@ -125,7 +136,15 @@ class FacebookAuthAdapter extends BaseAuthAdapter {
   @override
   Future<bool> isSignedIn() async {
     final accessToken = await _facebookAuth.accessToken;
-    return accessToken != null && !accessToken.isExpired;
+    if (accessToken == null) return false;
+
+    // Check if token is expired for ClassicToken
+    if (accessToken is ClassicToken) {
+      return !accessToken.isExpired;
+    }
+
+    // For other token types, assume valid if exists
+    return true;
   }
 
   /// Get current access token
