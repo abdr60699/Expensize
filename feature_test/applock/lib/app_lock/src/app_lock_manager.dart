@@ -113,11 +113,11 @@ class AppLockManager {
           await _settingsStorage.readInt(_failedAttemptsKey) ?? 0;
 
       // Determine if app should be locked
-      final isEnabled = await isEnabled();
+      final lockEnabled = await isEnabled();
       final lastActivityStr = await _settingsStorage.read(_lastActivityKey);
 
-      bool shouldBeLocked = isEnabled;
-      if (lastActivityStr != null && isEnabled) {
+      bool shouldBeLocked = lockEnabled;
+      if (lastActivityStr != null && lockEnabled) {
         final lastActivity = DateTime.parse(lastActivityStr);
         final elapsed = DateTime.now().difference(lastActivity);
         shouldBeLocked = elapsed > config.autoLockTimeout;
