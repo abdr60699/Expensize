@@ -93,7 +93,7 @@ class PaymentError {
   /// Timestamp when error occurred
   final DateTime timestamp;
 
-  const PaymentError({
+  PaymentError({
     required this.code,
     required this.message,
     this.providerErrorCode,
@@ -101,7 +101,7 @@ class PaymentError {
     this.isRetryable = false,
     this.details,
     DateTime? timestamp,
-  }) : timestamp = timestamp ?? const _DateTimeNow();
+  }) : timestamp = timestamp ?? DateTime.now();
 
   /// Create network error
   factory PaymentError.network({
@@ -234,13 +234,3 @@ class PaymentError {
   }
 }
 
-/// Helper class for default DateTime.now()
-class _DateTimeNow extends DateTime {
-  const _DateTimeNow() : super(0);
-
-  @override
-  String toString() => DateTime.now().toString();
-
-  @override
-  String toIso8601String() => DateTime.now().toIso8601String();
-}

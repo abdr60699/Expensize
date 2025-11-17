@@ -190,7 +190,7 @@ class NavigationService {
   }
 
   /// Shows a dialog
-  Future<T?> showDialog<T>({
+  Future<T?> showAppDialog<T>({
     required Widget Function(BuildContext) builder,
     bool barrierDismissible = true,
     Color? barrierColor,

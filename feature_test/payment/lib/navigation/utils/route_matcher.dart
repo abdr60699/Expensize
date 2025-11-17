@@ -26,7 +26,7 @@ class RouteMatcher {
 
       // Check child routes
       if (route.children.isNotEmpty) {
-        final childMatch = match(
+        final childMatch = RouteMatcher.match(
           normalizedPath,
           route.children,
           queryParameters: queryParameters,

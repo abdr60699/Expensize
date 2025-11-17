@@ -299,4 +299,14 @@ class MockPaymentProvider implements IPaymentProvider {
     final transaction = await getTransaction(transactionId);
     return transaction.status;
   }
+
+  @override
+  bool supportsCurrency(String currency) {
+    return supportedCurrencies.contains(currency.toUpperCase());
+  }
+
+  @override
+  bool supportsPaymentMethod(PaymentMethod method) {
+    return supportedMethods.contains(method);
+  }
 }
