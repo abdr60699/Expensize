@@ -216,9 +216,9 @@ class AuthRepository {
         );
       }
 
-      final userCredential = await currentUser.unlink(providerId);
+      final firebaseUser = await currentUser.unlink(providerId);
 
-      final user = UserModel.fromFirebaseUser(userCredential.user!);
+      final user = UserModel.fromFirebaseUser(firebaseUser);
       await _persistUser(user);
 
       return AuthResult.success(user);

@@ -8,4 +8,5 @@ export 'src/models/fcm_config.dart';
 export 'src/services/fcm_service.dart';
 
 // Export Firebase dependencies (convenience)
-export 'package:firebase_messaging/firebase_messaging.dart';
+// Hide BackgroundMessageHandler to avoid ambiguous export with fcm_config.dart
+export 'package:firebase_messaging/firebase_messaging.dart' hide BackgroundMessageHandler;
