@@ -69,14 +69,14 @@ class FCMService {
 
   /// Initialize local notifications plugin
   Future<void> _initializeLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
+    final androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
       requestSoundPermission: false,
     );
 
-    const initSettings = InitializationSettings(
+    final initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
     );

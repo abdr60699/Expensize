@@ -33,7 +33,7 @@ class PushNotification {
   /// Time received
   final DateTime receivedAt;
 
-  const PushNotification({
+  PushNotification({
     this.title,
     this.body,
     this.data,
@@ -45,7 +45,7 @@ class PushNotification {
     this.sound,
     this.clickAction,
     DateTime? receivedAt,
-  }) : receivedAt = receivedAt ?? const Duration().inMilliseconds as DateTime;
+  }) : receivedAt = receivedAt ?? DateTime.now();
 
   /// Create from Firebase RemoteMessage
   factory PushNotification.fromRemoteMessage(dynamic message) {
