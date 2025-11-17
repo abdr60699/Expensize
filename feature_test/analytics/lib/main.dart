@@ -205,7 +205,7 @@ class _AnalyticsDemoHomeState extends State<AnalyticsDemoHome> {
         severity: ErrorSeverity.error,
       );
 
-      await _errorLogger.reportError(errorReport);
+      await _errorLogger.report(errorReport);
       _addLog('❌ Error reported: ${error.toString()}');
     }
   }
