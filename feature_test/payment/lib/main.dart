@@ -53,7 +53,7 @@ class PaymentModuleApp extends StatelessWidget {
           if (snapshot.data == true) {
             return OnboardingDemoScreen(
               onComplete: () async {
-                await onboardingService.markComplete();
+                await onboardingService.completeOnboarding();
                 // Navigate to main app
               },
             );

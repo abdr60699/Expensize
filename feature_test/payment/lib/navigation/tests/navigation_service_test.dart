@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../models/app_route.dart';
+import '../models/navigation_result.dart';
 import '../services/navigation_service.dart';
 
 void main() {
