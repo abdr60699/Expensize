@@ -11,20 +11,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:applock/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('App Lock Example app smoke test', (WidgetTester tester) async {
+    // Create test app lock manager
+    final appLockManager = AppLockManager(
+      config: const AppLockConfig(
+        pinMinLength: 4,
+        maxAttempts: 5,
+        lockoutDuration: Duration(minutes: 5),
+        autoLockTimeout: Duration(seconds: 30),
+        allowBiometrics: true,
+      ),
+    );
+    await appLockManager.initialize();
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(AppLockExampleApp(manager: appLockManager));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the app builds successfully.
+    expect(find.byType(AppLockExampleApp), findsOneWidget);
   });
 }
