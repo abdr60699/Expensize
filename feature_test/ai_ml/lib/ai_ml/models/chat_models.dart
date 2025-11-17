@@ -240,12 +240,12 @@ class ChatMessage {
   /// Optional metadata (citations, sources, etc.)
   final Map<String, dynamic>? metadata;
 
-  const ChatMessage({
+  ChatMessage({
     required this.role,
     required this.content,
     DateTime? timestamp,
     this.metadata,
-  }) : timestamp = timestamp ?? const _DefaultTimestamp();
+  }) : timestamp = timestamp ?? DateTime.now();
 
   Map<String, dynamic> toJson() {
     return {
@@ -266,10 +266,6 @@ class ChatMessage {
   }
 }
 
-/// Workaround for const DateTime
-class _DefaultTimestamp extends DateTime {
-  const _DefaultTimestamp() : super.fromMillisecondsSinceEpoch(0);
-}
 
 /// Chat message role
 enum ChatRole {

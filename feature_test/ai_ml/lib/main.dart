@@ -705,22 +705,28 @@ class _CustomLogger implements AiLogger {
   const _CustomLogger({required this.onLog});
 
   @override
-  void info(String message, [dynamic data]) {
-    onLog('INFO: $message');
+  void log(LogLevel level, String message, [Object? error, StackTrace? stackTrace]) {
+    final levelStr = level.name.toUpperCase();
+    onLog('$levelStr: $message${error != null ? " - $error" : ""}');
   }
 
   @override
-  void warning(String message, [dynamic data]) {
-    onLog('WARN: $message');
+  void info(String message) {
+    log(LogLevel.info, message);
   }
 
   @override
-  void error(String message, [dynamic error, StackTrace? stackTrace]) {
-    onLog('ERROR: $message${error != null ? " - $error" : ""}');
+  void warning(String message, [Object? error]) {
+    log(LogLevel.warning, message, error);
   }
 
   @override
-  void debug(String message, [dynamic data]) {
-    onLog('DEBUG: $message');
+  void error(String message, [Object? error, StackTrace? stackTrace]) {
+    log(LogLevel.error, message, error, stackTrace);
+  }
+
+  @override
+  void debug(String message) {
+    log(LogLevel.debug, message);
   }
 }

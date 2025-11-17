@@ -17,13 +17,13 @@ class VectorDocument {
   /// Timestamp when added
   final DateTime createdAt;
 
-  const VectorDocument({
+  VectorDocument({
     required this.id,
     required this.text,
     this.embedding,
     this.metadata,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? const _DefaultTimestamp();
+  }) : createdAt = createdAt ?? DateTime.now();
 
   VectorDocument copyWith({
     String? id,
@@ -70,10 +70,6 @@ class VectorDocument {
   }
 }
 
-/// Workaround for const DateTime
-class _DefaultTimestamp extends DateTime {
-  const _DefaultTimestamp() : super.fromMillisecondsSinceEpoch(0);
-}
 
 /// Document with similarity score
 class ScoredDocument {

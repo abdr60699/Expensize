@@ -1,25 +1,24 @@
 import 'dart:io';
-import 'dart:ui';
-import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:google_mlkit_object_detection/google_mlkit_object_detection.dart' as mlkit;
 import '../../models/model_info.dart';
-import '../../models/detected_object.dart';
+import '../../models/detected_object.dart' as models;
 import '../../errors/ai_ml_exceptions.dart';
 import 'model_adapter.dart';
 
 /// Google ML Kit adapter for object detection
 class MlKitObjectDetectionAdapter extends ObjectDetectionAdapter {
   final ModelInfo modelInfo;
-  final ObjectDetectorOptions options;
+  final mlkit.ObjectDetectorOptions options;
 
-  ObjectDetector? _detector;
+  mlkit.ObjectDetector? _detector;
   bool _isInitialized = false;
 
   MlKitObjectDetectionAdapter({
     required this.modelInfo,
-    ObjectDetectorOptions? options,
+    mlkit.ObjectDetectorOptions? options,
   }) : options = options ??
-            ObjectDetectorOptions(
-              mode: DetectionMode.single,
+            mlkit.ObjectDetectorOptions(
+              mode: mlkit.DetectionMode.single,
               classifyObjects: true,
               multipleObjects: true,
             );
@@ -37,7 +36,7 @@ class MlKitObjectDetectionAdapter extends ObjectDetectionAdapter {
     if (_isInitialized) return;
 
     try {
-      _detector = ObjectDetector(options: options);
+      _detector = mlkit.ObjectDetector(options: options);
       _isInitialized = true;
     } catch (e, stackTrace) {
       throw InitializationException(
@@ -56,7 +55,7 @@ class MlKitObjectDetectionAdapter extends ObjectDetectionAdapter {
   }
 
   @override
-  Future<List<DetectedObject>> detect(
+  Future<List<models.DetectedObject>> detect(
     File imageFile, {
     double threshold = 0.5,
   }) async {
@@ -65,10 +64,10 @@ class MlKitObjectDetectionAdapter extends ObjectDetectionAdapter {
     }
 
     try {
-      final inputImage = InputImage.fromFile(imageFile);
+      final inputImage = mlkit.InputImage.fromFile(imageFile);
       final detectedObjects = await _detector!.processImage(inputImage);
 
-      final results = <DetectedObject>[];
+      final results = <models.DetectedObject>[];
 
       for (final obj in detectedObjects) {
         // Get the best label
@@ -78,7 +77,7 @@ class MlKitObjectDetectionAdapter extends ObjectDetectionAdapter {
           );
 
           if (topLabel.confidence >= threshold) {
-            results.add(DetectedObject(
+            results.add(models.DetectedObject(
               label: topLabel.text,
               score: topLabel.confidence,
               boundingBox: obj.boundingBox,
@@ -99,7 +98,7 @@ class MlKitObjectDetectionAdapter extends ObjectDetectionAdapter {
   }
 
   @override
-  Future<List<DetectedObject>> detectFromBytes(
+  Future<List<models.DetectedObject>> detectFromBytes(
     List<int> imageBytes, {
     double threshold = 0.5,
   }) async {

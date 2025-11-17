@@ -39,19 +39,15 @@ abstract class ImageClassificationAdapter extends ModelAdapter {
   });
 
   @override
-  Future<ImageClassificationResult> runInference<ImageClassificationResult>(
-    Map<String, dynamic> input,
-  ) async {
+  Future<T> runInference<T>(Map<String, dynamic> input) async {
     final file = input['file'] as File?;
     final bytes = input['bytes'] as List<int>?;
     final threshold = input['threshold'] as double? ?? 0.0;
 
     if (file != null) {
-      return await classify(file, threshold: threshold)
-          as ImageClassificationResult;
+      return await classify(file, threshold: threshold) as T;
     } else if (bytes != null) {
-      return await classifyFromBytes(bytes, threshold: threshold)
-          as ImageClassificationResult;
+      return await classifyFromBytes(bytes, threshold: threshold) as T;
     } else {
       throw ArgumentError('Either file or bytes must be provided');
     }
@@ -73,18 +69,15 @@ abstract class ObjectDetectionAdapter extends ModelAdapter {
   });
 
   @override
-  Future<List<DetectedObject>> runInference<List<DetectedObject>>(
-    Map<String, dynamic> input,
-  ) async {
+  Future<T> runInference<T>(Map<String, dynamic> input) async {
     final file = input['file'] as File?;
     final bytes = input['bytes'] as List<int>?;
     final threshold = input['threshold'] as double? ?? 0.5;
 
     if (file != null) {
-      return await detect(file, threshold: threshold) as List<DetectedObject>;
+      return await detect(file, threshold: threshold) as T;
     } else if (bytes != null) {
-      return await detectFromBytes(bytes, threshold: threshold)
-          as List<DetectedObject>;
+      return await detectFromBytes(bytes, threshold: threshold) as T;
     } else {
       throw ArgumentError('Either file or bytes must be provided');
     }
@@ -100,16 +93,14 @@ abstract class OcrAdapter extends ModelAdapter {
   Future<OcrResult> recognizeFromBytes(List<int> imageBytes);
 
   @override
-  Future<OcrResult> runInference<OcrResult>(
-    Map<String, dynamic> input,
-  ) async {
+  Future<T> runInference<T>(Map<String, dynamic> input) async {
     final file = input['file'] as File?;
     final bytes = input['bytes'] as List<int>?;
 
     if (file != null) {
-      return await recognize(file) as OcrResult;
+      return await recognize(file) as T;
     } else if (bytes != null) {
-      return await recognizeFromBytes(bytes) as OcrResult;
+      return await recognizeFromBytes(bytes) as T;
     } else {
       throw ArgumentError('Either file or bytes must be provided');
     }
@@ -125,14 +116,14 @@ abstract class TextEmbeddingAdapter extends ModelAdapter {
   Future<List<TextEmbedding>> embedBatch(List<String> texts);
 
   @override
-  Future<dynamic> runInference<T>(Map<String, dynamic> input) async {
+  Future<T> runInference<T>(Map<String, dynamic> input) async {
     final text = input['text'] as String?;
     final texts = input['texts'] as List<String>?;
 
     if (text != null) {
-      return await embed(text);
+      return await embed(text) as T;
     } else if (texts != null) {
-      return await embedBatch(texts);
+      return await embedBatch(texts) as T;
     } else {
       throw ArgumentError('Either text or texts must be provided');
     }
@@ -154,15 +145,15 @@ abstract class TextClassificationAdapter extends ModelAdapter {
   });
 
   @override
-  Future<dynamic> runInference<T>(Map<String, dynamic> input) async {
+  Future<T> runInference<T>(Map<String, dynamic> input) async {
     final text = input['text'] as String?;
     final texts = input['texts'] as List<String>?;
     final threshold = input['threshold'] as double? ?? 0.0;
 
     if (text != null) {
-      return await classify(text, threshold: threshold);
+      return await classify(text, threshold: threshold) as T;
     } else if (texts != null) {
-      return await classifyBatch(texts, threshold: threshold);
+      return await classifyBatch(texts, threshold: threshold) as T;
     } else {
       throw ArgumentError('Either text or texts must be provided');
     }
