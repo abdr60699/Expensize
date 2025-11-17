@@ -353,7 +353,7 @@ class CrashlyticsProvider implements ErrorProvider {
   /// WARNING: Only use in development/testing!
   Future<void> testCrash() async {
     if (kDebugMode) {
-      await _crashlytics.crash();
+      _crashlytics.crash();
     } else {
       _debugLog('Test crash only available in debug mode');
     }

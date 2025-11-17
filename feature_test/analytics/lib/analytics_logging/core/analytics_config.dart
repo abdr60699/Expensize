@@ -81,7 +81,7 @@ class AnalyticsLoggingConfig {
 
   /// Create minimal config (analytics only, no error reporting)
   factory AnalyticsLoggingConfig.analyticsOnly() {
-    return const AnalyticsLoggingConfig(
+    return AnalyticsLoggingConfig(
       privacyConfig: PrivacyConfig.analyticsOnly(),
       enableFirebaseAnalytics: true,
       enableSentry: false,
@@ -95,7 +95,7 @@ class AnalyticsLoggingConfig {
     AppContext? appContext,
   }) {
     return AnalyticsLoggingConfig(
-      privacyConfig: const PrivacyConfig.errorReportingOnly(),
+      privacyConfig: PrivacyConfig.errorReportingOnly(),
       enableFirebaseAnalytics: false,
       enableSentry: sentryDsn != null,
       sentryDsn: sentryDsn,
