@@ -262,7 +262,7 @@ class FirebaseAnalyticsProvider implements AnalyticsProvider {
   }) {
     return FirebaseAnalyticsObserver(
       analytics: _analytics,
-      nameExtractor: nameExtractor,
+      nameExtractor: nameExtractor ?? (RouteSettings settings) => settings.name,
     );
   }
 
