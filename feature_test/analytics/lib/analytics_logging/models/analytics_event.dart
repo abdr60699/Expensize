@@ -19,7 +19,7 @@ class AnalyticsEvent {
   /// Optional session ID to group related events
   final String? sessionId;
 
-  const AnalyticsEvent({
+  AnalyticsEvent({
     required this.name,
     this.parameters,
     DateTime? timestamp,

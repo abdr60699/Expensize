@@ -224,7 +224,7 @@ void main() {
     });
 
     test('sanitizes user data when PII not allowed', () async {
-      final noPI IManager = AnalyticsManager(
+      final noPIIManager = AnalyticsManager(
         providers: [mockProvider],
         privacyConfig: const PrivacyConfig(allowPII: false),
       );

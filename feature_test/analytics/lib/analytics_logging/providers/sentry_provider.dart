@@ -57,12 +57,12 @@ class SentryProvider implements ErrorProvider {
           options.attachStacktrace = true;
 
           // Filter events based on privacy config
-          options.beforeSend = (event, hint) {
+          options.beforeSend = (event, {hint}) {
             if (!isEnabled) return null;
             return _filterEventForPrivacy(event);
           };
 
-          options.beforeBreadcrumb = (breadcrumb, hint) {
+          options.beforeBreadcrumb = (breadcrumb, {hint}) {
             if (!isEnabled) return null;
             return breadcrumb;
           };

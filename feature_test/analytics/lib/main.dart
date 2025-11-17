@@ -86,7 +86,7 @@ class _AnalyticsDemoHomeState extends State<AnalyticsDemoHome> {
       // Create privacy config
       final privacyConfig = PrivacyConfig(
         analyticsEnabled: hasConsent,
-        crashReportingEnabled: hasConsent,
+        errorReportingEnabled: hasConsent,
         enableDebugLogging: true,
       );
 
@@ -197,12 +197,10 @@ class _AnalyticsDemoHomeState extends State<AnalyticsDemoHome> {
       final errorReport = ErrorReport(
         error: error,
         stackTrace: stackTrace,
-        appContext: AppContext(
-          appName: 'Analytics Demo',
+        appContext: const AppContext(
           appVersion: '1.0.0',
           buildNumber: '1',
           environment: 'demo',
-          platform: 'flutter',
         ),
         severity: ErrorSeverity.error,
       );
@@ -216,11 +214,11 @@ class _AnalyticsDemoHomeState extends State<AnalyticsDemoHome> {
     final currentConsent = await _consentManager.hasAnalyticsConsent();
 
     if (currentConsent) {
-      await _consentManager.revokeConsent();
+      await _consentManager.revokeAllConsent();
       await _analyticsManager.disable();
       _addLog('🔒 Analytics consent revoked');
     } else {
-      await _consentManager.grantConsent();
+      await _consentManager.grantAllConsent();
       await _analyticsManager.enable();
       _addLog('✅ Analytics consent granted');
     }

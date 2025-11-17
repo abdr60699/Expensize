@@ -1,4 +1,5 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/material.dart';
 import '../models/analytics_event.dart';
 import '../models/analytics_user.dart';
 import '../models/privacy_config.dart';
@@ -257,7 +258,7 @@ class FirebaseAnalyticsProvider implements AnalyticsProvider {
   /// )
   /// ```
   FirebaseAnalyticsObserver getNavigatorObserver({
-    String Function(RouteSettings)? nameExtractor,
+    String? Function(RouteSettings)? nameExtractor,
   }) {
     return FirebaseAnalyticsObserver(
       analytics: _analytics,

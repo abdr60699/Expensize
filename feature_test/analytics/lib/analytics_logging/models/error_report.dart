@@ -74,7 +74,7 @@ class ErrorReport {
   /// Whether this error has been handled by the app
   final bool isHandled;
 
-  const ErrorReport({
+  ErrorReport({
     required this.error,
     this.stackTrace,
     this.severity = ErrorSeverity.error,
