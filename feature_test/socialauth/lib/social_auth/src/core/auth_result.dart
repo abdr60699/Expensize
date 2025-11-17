@@ -49,7 +49,7 @@ class AuthResult {
   final Map<String, dynamic>? providerData;
   final DateTime timestamp;
 
-  const AuthResult({
+  AuthResult({
     required this.provider,
     this.accessToken,
     this.idToken,
